@@ -1,10 +1,32 @@
-body { background:#0b1220; color:#25437f; font-family:Arial, sans-serif; margin:0; }
-main { max-width:600px; margin:50px auto; padding:20px; }
-h1 { text-align:center; color:#93c5fd; }
-a { color:#60a5fa; text-decoration:none; margin-right:10px; }
-form { background:#0f172a; padding:20px; border-radius:10px; }
-label { display:block; margin-top:10px; }
-input { width:100%; padding:8px; margin-top:5px; border-radius:6px; border:1px solid #334155; background:#1e293b; color:#143f94; }
-button { margin-top:15px; padding:10px 15px; background:#2563eb; color:#b31e1e; border:none; border-radius:8px; cursor:pointer; }
-button:hover { background:#1d4ed8; }
-.card { background:#1e293b; padding:15px; border-radius:8px; margin:15px 0; }
+/* subtle background */
+.bg-surface {
+  background: #f5f7fb;
+}
+
+/* card polish */
+.soft-rounded {
+  border-radius: 1.25rem;
+}
+.card {
+  border: 0;
+}
+
+/* typography tweaks */
+h1, .h1, .h2, .h3 {
+  letter-spacing: .2px;
+}
+
+/* input + button feel */
+.form-control-lg {
+  border-radius: .9rem;
+  padding-top: .9rem;
+  padding-bottom: .9rem;
+}
+.btn-lg {
+  border-radius: .9rem;
+}
+
+/* small screens breathing room */
+@media (max-width: 480px) {
+  .card-body { padding: 1.25rem !important; }
+}

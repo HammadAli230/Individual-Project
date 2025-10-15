@@ -1,67 +1,73 @@
 <?php
-require_once __DIR__ . "/../config/config.php";
+require_once __DIR__ . '/../config/database/db_connection.php';
 session_start();
-$errors = [];
 
+$errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $name = trim($_POST['name'] ?? '');
   $email = trim($_POST['email'] ?? '');
   $password = $_POST['password'] ?? '';
-  $password2 = $_POST['password2'] ?? '';
 
-  if (strlen($name) < 2) $errors[] = 'Name must be at least 2 characters.';
-  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Invalid email.';
-  if (strlen($password) < 8) $errors[] = 'Password must be at least 8 characters.';
-  if ($password !== $password2) $errors[] = 'Passwords do not match.';
-
-  if (!$errors) {
-    try {
-      $pdo = pdo_conn();
-      $exists = $pdo->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
-      $exists->execute([$email]);
-      if ($exists->fetch()) {
-        $errors[] = 'Email is already registered.';
-      } else {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $pdo->prepare('INSERT INTO users (name, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())')
-            ->execute([$name, $email, $hash]);
-        $_SESSION['user'] = ['id'=>$pdo->lastInsertId(),'name'=>$name,'email'=>$email];
-        header('Location: '.$BASE_PATH.'/public/index.php'); exit;
-      }
-    } catch (Throwable $e) {
-      $errors[] = 'Database error.';
+  if ($name === '' || $email === '' || $password === '') {
+    $errors[] = 'All fields are required.';
+  } else {
+    $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
+    $stmt->execute([$email]);
+    if ($stmt->fetch()) {
+      $errors[] = 'Email is already registered.';
+    } else {
+      $hash = password_hash($password, PASSWORD_DEFAULT);
+      $insert = $pdo->prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)');
+      $insert->execute([$name, $email, $hash]);
+      header('Location: login.php');
+      exit;
     }
   }
 }
-include __DIR__ . "/../includes/header.php";
-include __DIR__ . "/../includes/nav.php";
 ?>
-<main class="container py-4">
-  <div class="p-4 bg-white border rounded-4">
-    <h1 class="h4 mb-3">Create an account</h1>
-    <?php if ($errors): ?>
-      <div class="alert alert-danger"><ul class="mb-0"><?php foreach ($errors as $e): ?><li><?= htmlspecialchars($e) ?></li><?php endforeach; ?></ul></div>
-    <?php endif; ?>
-    <form method="post" novalidate>
-      <div class="mb-3">
-        <label class="form-label">Full name</label>
-        <input class="form-control" type="text" name="name" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input class="form-control" type="email" name="email" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <input class="form-control" type="password" name="password" required>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Confirm password</label>
-        <input class="form-control" type="password" name="password2" required>
-      </div>
-      <button class="btn btn-primary" type="submit">Create account</button>
-      <a class="btn btn-link" href="login.php">Already have an account?</a>
-    </form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body class="bg-light">
+<div class="container py-5" style="max-width:560px">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h1 class="h4 mb-3">Create an Account</h1>
+
+      <?php if ($errors): ?>
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            <?php foreach ($errors as $err): ?><li><?= htmlspecialchars($err) ?></li><?php endforeach; ?>
+          </ul>
+        </div>
+      <?php endif; ?>
+
+      <form method="post">
+        <div class="mb-3">
+          <label class="form-label">Name</label>
+          <input class="form-control" type="text" name="name" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input class="form-control" type="email" name="email" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input class="form-control" type="password" name="password" required>
+        </div>
+        <button class="btn btn-success w-100" type="submit">Sign Up</button>
+        <p class="mt-3 mb-0 text-center">
+          <a href="login.php">Already have an account?</a>
+        </p>
+      </form>
+    </div>
   </div>
-</main>
-<?php include __DIR__ . "/../includes/footer.php"; ?>
+</div>
+</body>
+</html>
