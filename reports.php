@@ -1,1 +1,7 @@
-<?php include __DIR__ . '/includes/header.php'; ?><?php include __DIR__ . '/includes/nav.php'; ?><main class='container py-4'><div class='p-4 bg-white border rounded-4'><h1 class='h4'>Reports</h1><p class='text-muted'>Coming soon…</p></div></main><?php include __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/header.php'; ?>
+<div class="container">
+  <div class="card">
+    <h2>Reports</h2>
+    <p class="muted">Coming soon…</p>
+  </div>
+</div>
