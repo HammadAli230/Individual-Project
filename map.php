@@ -45,28 +45,33 @@ require_once __DIR__ . '/includes/header.php';
 </head>
 <body>
   <div id="topbar">
-    <span class="pill"><b>ADV</b> Map</span>
-    <label>Place <input id="place" value="Birmingham, UK" size="24"></label>
-    <label>Mode
-      <select id="mode">
-        <option value="walk">walk</option>
-        <option value="bike">bike</option>
-        <option value="drive" selected>drive</option>
-      </select>
-    </label>
-    <label><input type="checkbox" id="trafficToggle"> Live Traffic</label>
-    <button id="routeBtn">Route</button>
-    <button id="compareBtn">Compare</button>
-    <button id="clearBtn">Clear</button>
-    <button id="locateBtn">Locate</button>
-    <button id="exportBtn">Export CSV</button>
-    <span class="spacer"></span>
-    <div class="stats">
-      <div><b id="statDistance">—</b> km</div>
-      <div><b id="statEta">—</b> min</div>
-      <div><b id="statCo2">—</b> g CO₂e</div>
-    </div>
+  <span class="pill"><b>ADV</b> Map</span>
+  <label>Start <input id="start" value="Aston University, Birmingham" size="28" placeholder="Enter start address"></label>
+  <label>End <input id="end" value="New Street Station, Birmingham" size="28" placeholder="Enter destination"></label>
+  <button id="swapBtn">Swap</button>
+  <label>Mode
+    <select id="mode">
+      <option value="walk">walk</option>
+      <option value="bike">bike</option>
+      <option value="drive" selected>drive</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="trafficToggle"> Live Traffic</label>
+  <button id="routeBtn">Route</button>
+  <button id="compareBtn">Compare</button>
+  <button id="clearBtn">Clear</button>
+  <button id="locateBtn">Locate</button>
+  <label>Places <input id="placesQuery" size="16" placeholder="e.g., supermarket"></label>
+  <button id="placesBtn">Search</button>
+  <button id="exportBtn">Export CSV</button>
+  <span class="spacer"></span>
+  <div class="stats">
+    <div><b id="statDistance">—</b> km</div>
+    <div><b id="statEta">—</b> min</div>
+    <div><b id="statCo2">—</b> g CO₂e</div>
   </div>
+</div>
+
 
   <div id="map"></div>
   <div class="legend">
