@@ -77,6 +77,10 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+ <script>
+  window.TOMTOM_KEY = <?php echo json_encode($TOMTOM_API_KEY ?? ""); ?>;
+  window.API_BASE   = <?php echo json_encode($API_BASE ?? ""); ?>;
+</script>
   <script src="./js/map.js"></script>
 </body>
 </html>
