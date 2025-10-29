@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse
 from typing import List, Tuple, Optional, Literal, Dict
@@ -9,26 +8,24 @@ from shapely.geometry import LineString, mapping
 
 app = FastAPI(title="ADV Routing API (Traffic + OSM)")
 
-# ---------- Config ----------
 ox.settings.use_cache = True
 ox.settings.timeout = 300
 MODE_TO_NETWORK = {"walk": "walk", "bike": "bike", "drive": "drive"}
-BASE_SPEED = {"walk": 1.4, "bike": 4.5, "drive": 13.9}      # m/s
+BASE_SPEED = {"walk": 1.4, "bike": 4.5, "drive": 13.9}
 EMISSIONS_G_PER_KM = {"walk": 0.0, "bike": 0.0, "drive": 180.0}
 TOMTOM_KEY = os.getenv("TOMTOM_API_KEY", "")
 
-# ---------- Helpers ----------
 def _bbox_from_points(lat1: float, lon1: float, lat2: float, lon2: float, pad=0.015):
     north = max(lat1, lat2) + pad
     south = min(lat1, lat2) - pad
     east  = max(lon1, lon2) + pad
     west  = min(lon1, lon2) - pad
-    return north, south, east, west  # n,s,e,w
+    return north, south, east, west
 
 def _graph_bbox(lat1: float, lon1: float, lat2: float, lon2: float, mode: str) -> nx.MultiDiGraph:
     net = MODE_TO_NETWORK.get(mode, "bike")
     n, s, e, w = _bbox_from_points(lat1, lon1, lat2, lon2, pad=0.020)
-    bbox = (w, s, e, n)  # west, south, east, north
+    bbox = (w, s, e, n)
     G = ox.graph_from_bbox(bbox=bbox, network_type=net, simplify=True)
     G = ox.add_edge_speeds(G)
     G = ox.add_edge_travel_times(G)
@@ -80,7 +77,6 @@ def _parse_points(start: Optional[str], end: Optional[str],
         raise HTTPException(status_code=400, detail="Provide start/end as 'lat,lon' or separate *_lat/_lon.")
     return (s_lat, s_lon), (e_lat, e_lon)
 
-# ---------- TomTom Routing ----------
 def _route_tomtom(start_lat: float, start_lon: float, end_lat: float, end_lon: float) -> Dict:
     if not TOMTOM_KEY:
         raise HTTPException(status_code=400, detail="TOMTOM_API_KEY not set in environment.")
@@ -131,7 +127,6 @@ def _route_tomtom(start_lat: float, start_lon: float, end_lat: float, end_lon: f
     feat = {"type":"Feature","properties":props,"geometry":line}
     return {"type":"FeatureCollection","features":[feat]}
 
-# ---------- Endpoints ----------
 @app.get("/")
 def root():
     return {"ok": True, "msg": "FastAPI up"}
