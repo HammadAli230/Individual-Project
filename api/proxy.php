@@ -1,21 +1,39 @@
 <?php
 require_once __DIR__ . '/../includes/config.php';
+
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path   = isset($_GET['path']) ? $_GET['path'] : '';
-$query  = $_GET; unset($query['path']);
-$url = rtrim($API_BASE, '/') . '/' . ltrim($path, '/');
-if ($method === 'GET' && !empty($query)) { $url .= '?' . http_build_query($query); }
-set_time_limit(300);
-$ch = curl_init($url);
-$headers = [];
-if ($method === 'POST') {
-  curl_setopt($ch, CURLOPT_POST, true);
-  $raw = file_get_contents('php://input');
-  if (strlen($raw)) { curl_setopt($ch, CURLOPT_POSTFIELDS, $raw); $headers[] = 'Content-Type: application/json'; }
-  else { curl_setopt($ch, CURLOPT_POSTFIELDS, $_POST); }
+
+$base = rtrim($API_BASE ?? 'http://127.0.0.1:8000', '/');
+$target = $base . '/' . ltrim($path, '/');
+
+$raw_qs = $_SERVER['QUERY_STRING'] ?? '';
+if ($raw_qs !== '') {
+  $raw_qs = preg_replace('/(^|&)path=[^&]*/', '$1', $raw_qs, 1);
+  $raw_qs = trim($raw_qs, '&');
+  if ($raw_qs !== '') {
+    $target .= '?' . $raw_qs;
+  }
 }
-curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_FOLLOWLOCATION=>true, CURLOPT_HTTPHEADER=>$headers, CURLOPT_CONNECTTIMEOUT=>30, CURLOPT_TIMEOUT=>300]);
-$body = curl_exec($ch); $http = curl_getinfo($ch, CURLINFO_HTTP_CODE); $err = curl_error($ch); curl_close($ch);
-http_response_code($http ?: 502); header('Content-Type: application/json');
-if ($body !== false && $http >= 200 && $http < 300) echo $body;
-else echo json_encode(['ok'=>false,'http'=>$http ?: 0,'error'=>$err ?: 'proxy_failed','url'=>$url,'method'=>$method]);
+
+set_time_limit(300);
+
+$forward_headers = [];
+foreach ($_SERVER as $k => $v) {
+  if (strpos($k, 'HTTP_') === 0) {
+    $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($k, 5)))));
+    if (in_array($name, ['Host', 'Content-Length'])) continue;
+    $forward_headers[] = $name . ': ' . $v;
+  }
+}
+if (!empty($_SERVER['CONTENT_TYPE'])) {
+  $forward_headers[] = 'Content-Type: ' . $_SERVER['CONTENT_TYPE'];
+}
+if (!preg_grep('/^Accept:/i', $forward_headers)) {
+  $forward_headers[] = 'Accept: application/json';
+}
+
+$ch = curl_init($target);
+
+$body_to_send = null;
+switch (strtoupper($method))
